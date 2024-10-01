@@ -16,17 +16,11 @@ public class OrderController {
 
     private final ProcessOrderPort processOrderPort;
 
-    @PostMapping(value = "/process",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/process", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void processFile(@RequestParam("file") MultipartFile file) throws Exception {
-
-        try {
         validateFile(file);
-            processOrderPort.processOrder(file.getInputStream());
-            System.out.println("Processing file: " + file);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid file");
-        }
-
+        processOrderPort.processOrder(file.getInputStream());
+        System.out.println("Processing file: " + file.getOriginalFilename());
     }
 
     public void validateFile(MultipartFile file) {
