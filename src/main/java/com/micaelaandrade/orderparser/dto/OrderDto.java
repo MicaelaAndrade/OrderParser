@@ -1,34 +1,17 @@
 package com.micaelaandrade.orderparser.dto;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-public class OrderDto {
-    private String orderId;
-    private String date;
-    private List<ProductDto> products = new ArrayList<>();
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public List<ProductDto> getProducts() {
-        return products;
-    }
-
-    public void setProducts(List<ProductDto> products) {
-        this.products = products;
-    }
-}
+@Builder
+public record OrderDto (Long userId,
+        String userName,
+        Long orderId,
+        Long productId,
+        BigDecimal value,
+        LocalDate date
+){}

@@ -1,27 +1,16 @@
 package com.micaelaandrade.orderparser.model;
 
+import lombok.Builder;
+import lombok.Getter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Builder
 public class Product {
-    private String productId;
-    private String value;
+    private Long id;
+    private Long productId;
+    private BigDecimal value;
 
-    public Product(String productId, String value) {
-        this.productId = productId;
-        this.value = value;
     }
 
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-}

@@ -20,7 +20,7 @@ public class OrderController {
     public void processFile(@RequestParam("file") MultipartFile file) throws Exception {
         validateFile(file);
         processOrderPort.processOrder(file.getInputStream());
-        System.out.println("Processing file: " + file.getOriginalFilename());
+
     }
 
     public void validateFile(MultipartFile file) {
