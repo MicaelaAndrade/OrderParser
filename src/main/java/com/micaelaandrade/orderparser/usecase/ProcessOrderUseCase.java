@@ -2,6 +2,7 @@ package com.micaelaandrade.orderparser.usecase;
 
 import com.micaelaandrade.orderparser.ProcessOrderPort;
 import com.micaelaandrade.orderparser.dto.OrderDto;
+import com.micaelaandrade.orderparser.infrastructure.db.OrderImp;
 import com.micaelaandrade.orderparser.infrastructure.db.mapper.OrderEntityMapper;
 import com.micaelaandrade.orderparser.controller.domain.model.mapper.OrderMapper;
 import com.micaelaandrade.orderparser.controller.domain.model.Order;
