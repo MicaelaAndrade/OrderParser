@@ -1,9 +1,9 @@
-package com.micaelaandrade.orderparser.mapper;
+package com.micaelaandrade.orderparser.controller.domain.model.mapper;
 
 import com.micaelaandrade.orderparser.dto.OrderDto;
-import com.micaelaandrade.orderparser.model.Order;
-import com.micaelaandrade.orderparser.model.Product;
-import com.micaelaandrade.orderparser.model.User;
+import com.micaelaandrade.orderparser.controller.domain.model.Order;
+import com.micaelaandrade.orderparser.controller.domain.model.Product;
+import com.micaelaandrade.orderparser.controller.domain.model.User;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 

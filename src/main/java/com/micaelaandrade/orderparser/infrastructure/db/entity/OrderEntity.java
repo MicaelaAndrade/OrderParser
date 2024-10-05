@@ -38,8 +38,6 @@ public class OrderEntity {
 
     private LocalDate orderDate;
 
-    public BigDecimal totalValue;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId")
     private List<ProductEntity> productEntities;

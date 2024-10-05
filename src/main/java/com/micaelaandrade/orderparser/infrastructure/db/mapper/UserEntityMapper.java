@@ -1,7 +1,7 @@
 package com.micaelaandrade.orderparser.infrastructure.db.mapper;
 
 import com.micaelaandrade.orderparser.infrastructure.db.entity.UserEntity;
-import com.micaelaandrade.orderparser.model.User;
+import com.micaelaandrade.orderparser.controller.domain.model.User;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

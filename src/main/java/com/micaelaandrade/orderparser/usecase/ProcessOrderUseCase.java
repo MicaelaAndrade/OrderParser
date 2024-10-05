@@ -1,17 +1,13 @@
 package com.micaelaandrade.orderparser.usecase;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.micaelaandrade.orderparser.ProcessOrderPort;
 import com.micaelaandrade.orderparser.dto.OrderDto;
-import com.micaelaandrade.orderparser.mapper.OrderMapper;
-import com.micaelaandrade.orderparser.model.Order;
-import com.micaelaandrade.orderparser.model.Product;
-import com.micaelaandrade.orderparser.model.User;
+import com.micaelaandrade.orderparser.infrastructure.db.mapper.OrderEntityMapper;
+import com.micaelaandrade.orderparser.controller.domain.model.mapper.OrderMapper;
+import com.micaelaandrade.orderparser.controller.domain.model.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,31 +21,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.groupingBy;
-
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class ProcessOrderUseCase implements ProcessOrderPort {
 
     private final OrderMapper orderMapper;
+    private final OrderEntityMapper orderEntityMapper;
+    private final OrderImp orderImp;
 
     @Override
     public void processOrder(InputStream file) {
-        Map<String, User> userMap = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file))) {
-            var orderFormart =
-                    formatOrder(br);
-            var domin = orderFormart.stream().map(orderDto -> orderMapper.dtoToDomain(orderDto)).toList();
-            System.out.println(domin.get(0).getOrderId() + "Testeeeeeeeeeee'");
-            saveOrder(domin);
-
+            log.error("Import file");
+            var orderFormat = formatOrder(br);
+            var domain = orderFormat.stream().map(orderDto -> orderMapper.dtoToDomain(orderDto)).toList();
+            saveOrder(domain);
         } catch (IOException e) {
-            log.error("[execute] Error reading file", e);
+            log.error("Error reading file", e);
         }
     }
 
     private List<OrderDto> formatOrder(BufferedReader br) throws IOException {
+        log.error("Formating file");
 
         List<OrderDto> orderDtoList = new ArrayList<>();
         String line;
@@ -70,53 +64,26 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
                     .value(new BigDecimal(value))
                     .date(LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE))
                     .build());
-
-
         }
 
         return orderDtoList;
     }
 
-    private boolean isValidLine(String line) {
-        return line.length() >= 95;
+    private void saveOrder(List<Order> orders) {
+        log.error("Save Order");
+        var orderItemByUser = orderByUser(orders);
+        var order = orderEntityMapper.domainToEntity(orderItemByUser);
+        orderImp.saveOrder(order);
     }
 
-    private String formatDate(String date) {
-        return date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6, 8);
+    private Map<Long, List<Order>> orderByUser(List<Order> orderUser) {
+        log.error("Find all orders by user");
+        Map<Long, List<Order>> userOrdersMap = new HashMap<>();
+        orderUser.stream()
+                .forEach(order -> {
+                    Long userId = order.getUser().getUserId();
+                    userOrdersMap.computeIfAbsent(userId, k -> new ArrayList<>()).add(order);
+                });
+        return userOrdersMap;
     }
-
-    private void saveOrder(List <Order> order) {
-        var orderItem = getOrderItem(order);
-        var orderUser = getOrderUser(order);
-        orderItemByUser(orderItem, orderUser);
-
-    }
-
-    private Map<Long, List<Order>> getOrderItem(List<Order> order) {
-        Map<Long, List<Order>> orderPerItem = order.stream()
-                .collect(groupingBy(Order::getOrderId));
-
-        return orderPerItem;
-
-    }
-
-    private Map<User, List<Order>> getOrderUser(List<Order> order) {
-        Map<User, List<Order>> orderPerUser = order.stream()
-                .collect(groupingBy(Order::getUser));
-
-        return orderPerUser;
-    }
-
-    private void orderItemByUser (Map<Long, List<Order>> orderItem, Map<User, List<Order>> orderUser) {
-        orderItem.forEach((key, value) -> {
-            orderUser.forEach((keyUser, valueUser) -> {
-              if(valueUser.contains(value)){
-                  System.out.println(value + "valueeeeeeeeeeeeeeItem");
-                  System.out.println(valueUser + "valueeeeeeeeeeeeeeUser");
-              }
-            });
-        });
-
-    }
-
 }

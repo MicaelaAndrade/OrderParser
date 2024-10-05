@@ -1,11 +1,10 @@
-package com.micaelaandrade.orderparser.model;
+package com.micaelaandrade.orderparser.controller.domain.model;
 
 import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

@@ -1,4 +1,4 @@
-package com.micaelaandrade.orderparser.model;
+package com.micaelaandrade.orderparser.controller.domain.model;
 
 import lombok.Builder;
 import lombok.Getter;
