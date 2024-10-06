@@ -1,17 +1,16 @@
-package com.micaelaandrade.orderparser.infrastructure.db;
+package com.micaelaandrade.orderparser.database;
 
-import com.micaelaandrade.orderparser.infrastructure.db.entity.OrderEntity;
-import com.micaelaandrade.orderparser.infrastructure.db.entity.ProductEntity;
-import com.micaelaandrade.orderparser.infrastructure.db.entity.UserEntity;
-import com.micaelaandrade.orderparser.infrastructure.db.repository.OrderRepository;
-import com.micaelaandrade.orderparser.infrastructure.db.repository.ProductRepository;
-import com.micaelaandrade.orderparser.infrastructure.db.repository.UserRepository;
+import com.micaelaandrade.orderparser.database.entity.OrderEntity;
+import com.micaelaandrade.orderparser.database.entity.ProductEntity;
+import com.micaelaandrade.orderparser.database.entity.UserEntity;
+import com.micaelaandrade.orderparser.database.repository.OrderRepository;
+import com.micaelaandrade.orderparser.database.repository.ProductRepository;
+import com.micaelaandrade.orderparser.database.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -32,12 +31,21 @@ public class OrderImp {
                     .orElseGet(() -> orderRepository.save(orderEntity));
 
             List<ProductEntity> updatedProductEntities = new ArrayList<>();
-
             for (ProductEntity productEntity : orderEntity.getProductEntities()) {
+                productEntity.setOrder(existingOrder);
                 ProductEntity savedProduct = productRepository.save(productEntity);
                 updatedProductEntities.add(savedProduct);
             }
+
+            List<ProductEntity> existingProducts = existingOrder.getProductEntities();
+            for (ProductEntity existingProduct : existingProducts) {
+                if (!updatedProductEntities.contains(existingProduct)) {
+                    productRepository.delete(existingProduct);
+                }
+            }
+
             existingOrder.setProductEntities(updatedProductEntities);
+
             orderRepository.save(existingOrder);
         });
     }

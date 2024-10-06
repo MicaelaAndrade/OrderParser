@@ -1,4 +1,4 @@
-package com.micaelaandrade.orderparser.infrastructure.db.entity;
+package com.micaelaandrade.orderparser.database.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

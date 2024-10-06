@@ -1,6 +1,6 @@
-package com.micaelaandrade.orderparser.infrastructure.db.repository;
+package com.micaelaandrade.orderparser.database.repository;
 
-import com.micaelaandrade.orderparser.infrastructure.db.entity.UserEntity;
+import com.micaelaandrade.orderparser.database.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

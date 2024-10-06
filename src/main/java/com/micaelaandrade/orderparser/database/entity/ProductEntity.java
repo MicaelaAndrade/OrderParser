@@ -1,10 +1,13 @@
-package com.micaelaandrade.orderparser.infrastructure.db.entity;
+package com.micaelaandrade.orderparser.database.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,16 +15,16 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Builder
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+
 @Table(name = "`product`")
 @Setter
+@EqualsAndHashCode(exclude = "order")
+
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,5 +35,9 @@ public class ProductEntity {
     private BigDecimal value;
 
     private BigDecimal totalValue;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
 
 }

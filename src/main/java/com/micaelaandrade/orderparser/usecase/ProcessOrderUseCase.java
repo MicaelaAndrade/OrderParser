@@ -1,11 +1,16 @@
 package com.micaelaandrade.orderparser.usecase;
 
 import com.micaelaandrade.orderparser.ProcessOrderPort;
+import com.micaelaandrade.orderparser.database.UserImpl;
+import com.micaelaandrade.orderparser.database.entity.UserEntity;
+import com.micaelaandrade.orderparser.domain.mapper.OrderMapper;
+import com.micaelaandrade.orderparser.domain.model.Order;
 import com.micaelaandrade.orderparser.dto.OrderDto;
-import com.micaelaandrade.orderparser.infrastructure.db.OrderImp;
-import com.micaelaandrade.orderparser.infrastructure.db.mapper.OrderEntityMapper;
-import com.micaelaandrade.orderparser.controller.domain.model.mapper.OrderMapper;
-import com.micaelaandrade.orderparser.controller.domain.model.Order;
+import com.micaelaandrade.orderparser.database.OrderImp;
+import com.micaelaandrade.orderparser.database.entity.OrderEntity;
+import com.micaelaandrade.orderparser.database.mapper.OrderEntityMapper;
+
+import com.micaelaandrade.orderparser.dto.OrderResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,6 +35,7 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
     private final OrderMapper orderMapper;
     private final OrderEntityMapper orderEntityMapper;
     private final OrderImp orderImp;
+    private final UserImpl userImp;
 
     @Override
     public void processOrder(InputStream file) {
@@ -87,4 +93,14 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
                 });
         return userOrdersMap;
     }
+
+
+    @Override
+    public OrderResponseDto getOrdersByUser (Long userId){
+        var user = userImp.findByUserId(userId);
+        List<OrderEntity> orders = orderImp.getOrderByUserId(user);
+        return orderEntityMapper.domainToDto(user,orders);
+
+    }
+
 }
