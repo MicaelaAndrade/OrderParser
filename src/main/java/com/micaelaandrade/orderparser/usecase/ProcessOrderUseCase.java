@@ -103,4 +103,15 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
 
     }
 
+    @Override
+    public List<OrderResponseDto> getAllOrders() {
+        List<UserEntity> users = (List<UserEntity>) userImp.findAll();
+        List<OrderResponseDto> orders = new ArrayList<>();
+        users.stream().forEach(user -> {
+            List<OrderEntity> orderEntity = orderImp.getOrderByUserId(user);
+            orders.add(orderEntityMapper.domainToDto(user, orderEntity));
+        });
+        return orders;
+    }
+
 }

@@ -9,7 +9,8 @@ import lombok.Builder;
 public record OrderResponseDto(
         Long user_id,
         String name,
-        List<Order> orders
+        List<Order> orders,
+        BigDecimal totalValue
 ) {
     @Builder
     public record Order(

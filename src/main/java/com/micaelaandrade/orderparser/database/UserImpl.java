@@ -24,4 +24,9 @@ public class UserImpl {
 
     }
 
+    public List<UserEntity> findAll() {
+        return userRepository.findAll();
+    }
+
+
 }

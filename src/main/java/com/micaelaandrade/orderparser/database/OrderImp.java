@@ -50,4 +50,8 @@ public class OrderImp {
         });
     }
 
+    public List<OrderEntity> getOrderByUserId(UserEntity user) {
+        return orderRepository.findAllByUserId(user.getId());
+    }
+
 }

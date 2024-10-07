@@ -46,4 +46,10 @@ public class OrderController {
 
     }
 
+    @GetMapping("/orders")
+    public List<OrderResponseDto> getAllOrders()  {
+        return processOrderPort.getAllOrders();
+    }
+
+
 }
