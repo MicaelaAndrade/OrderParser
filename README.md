@@ -66,3 +66,10 @@ docker compose up -d
 ```
 ./mvnw test
 ```
+
+# Coverage
+```
+./mvnw package
+
+./target/site/jacoco/index.html
+```
