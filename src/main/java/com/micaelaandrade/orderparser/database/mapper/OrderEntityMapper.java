@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderEntityMapper {
+
     public List<OrderEntity> domainToEntity(Map<Long, List<Order>> orders) {
         List<OrderEntity> orderEntities = new ArrayList<>();
 
@@ -35,11 +36,16 @@ public class OrderEntityMapper {
                                 .build())
                         .collect(Collectors.toList());
 
+                BigDecimal totalOrderValue = productEntities.stream()
+                        .map(ProductEntity::getValue)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
                 OrderEntity orderEntity = OrderEntity.builder()
                         .externalId(order.getOrderId())
                         .orderDate(order.getDate())
                         .user(userEntity)
                         .productEntities(productEntities)
+                        .total(totalOrderValue)
                         .build();
 
                 orderEntities.add(orderEntity);
@@ -51,6 +57,7 @@ public class OrderEntityMapper {
 
     public OrderResponseDto domainToDto(UserEntity user, List<OrderEntity> orders) {
         List<OrderResponseDto.Order> orderDtos = new ArrayList<>();
+        BigDecimal totalValue = BigDecimal.ZERO;
 
         for (OrderEntity order : orders) {
             List<OrderResponseDto.Product> productList = new ArrayList<>();
@@ -66,11 +73,14 @@ public class OrderEntityMapper {
                     .map(OrderResponseDto.Product::value)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+            totalValue = totalValue.add(total);
+
             OrderResponseDto.Order orderDto = OrderResponseDto.Order.builder()
                     .order_id(order.getExternalId())
                     .total(total)
                     .date(order.getOrderDate())
                     .productList(productList)
+                    .totalValue(totalValue)
                     .build();
 
             orderDtos.add(orderDto);

@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,76 +43,108 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file))) {
             log.error("Import file");
             var orderFormat = formatOrder(br);
-            var domain = orderFormat.stream().map(orderDto -> orderMapper.dtoToDomain(orderDto)).toList();
+            var domain = orderFormat.stream()
+                    .map(orderDto -> orderMapper.dtoToDomain(orderDto))
+                    .toList();
             saveOrder(domain);
         } catch (IOException e) {
             log.error("Error reading file", e);
+        } catch (Exception e) {
+            log.error("Unexpected error processing the file", e);
         }
     }
 
     private List<OrderDto> formatOrder(BufferedReader br) throws IOException {
         log.error("Formating file");
-
         List<OrderDto> orderDtoList = new ArrayList<>();
         String line;
 
         while ((line = br.readLine()) != null) {
-            String userId = line.substring(0, 10).trim();
-            String userName = line.substring(10, 55).trim();
-            String orderId = line.substring(55, 65).trim();
-            String productId = line.substring(65, 75).trim();
-            String value = line.substring(75, 87).trim();
-            String date = line.substring(87, 95).trim();
+            try {
 
-            orderDtoList.add(OrderDto.builder()
-                    .userId(Long.valueOf(userId))
-                    .userName(userName)
-                    .orderId(Long.valueOf(orderId))
-                    .productId(Long.valueOf(productId))
-                    .value(new BigDecimal(value))
-                    .date(LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE))
-                    .build());
+                if (line.length() < 95) {
+                    log.error("Line is too short: {}", line);
+                    throw new IllegalArgumentException("Line is too short: " + line);
+                }
+
+                String userId = line.substring(0, 10).trim();
+                String userName = line.substring(10, 55).trim();
+                String orderId = line.substring(55, 65).trim();
+                String productId = line.substring(65, 75).trim();
+                String value = line.substring(75, 87).trim();
+                String date = line.substring(87, 95).trim();
+
+                orderDtoList.add(OrderDto.builder()
+                        .userId(Long.valueOf(userId))
+                        .userName(userName)
+                        .orderId(Long.valueOf(orderId))
+                        .productId(Long.valueOf(productId))
+                        .value(new BigDecimal(value))
+                        .date(LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE))
+                        .build());
+            } catch (NumberFormatException | DateTimeParseException e) {
+                log.error("Error parsing line: {} - Exception: {}", line, e.getMessage());
+            } catch (Exception e) {
+                log.error("Unexpected error processing line: {} - Exception: {}", line, e.getMessage());
+                throw e;
+            }
         }
 
         return orderDtoList;
     }
 
     private void saveOrder(List<Order> orders) {
-        log.error("Save Order");
-        var orderItemByUser = orderByUser(orders);
-        var order = orderEntityMapper.domainToEntity(orderItemByUser);
-        orderImp.saveOrder(order);
+        try {
+            log.error("Saving Order");
+            var orderItemByUser = orderByUser(orders);
+            var order = orderEntityMapper.domainToEntity(orderItemByUser);
+            orderImp.saveOrder(order);
+        } catch (Exception e) {
+            log.error("Error saving order", e);
+            throw new RuntimeException("Failed to save orders", e);
+        }
     }
 
     private Map<Long, List<Order>> orderByUser(List<Order> orderUser) {
-        log.error("Find all orders by user");
-        Map<Long, List<Order>> userOrdersMap = new HashMap<>();
-        orderUser.stream()
-                .forEach(order -> {
-                    Long userId = order.getUser().getUserId();
-                    userOrdersMap.computeIfAbsent(userId, k -> new ArrayList<>()).add(order);
-                });
-        return userOrdersMap;
+        try {
+            log.error("Finding all orders by user");
+            Map<Long, List<Order>> userOrdersMap = new HashMap<>();
+            orderUser.forEach(order -> {
+                Long userId = order.getUser().getUserId();
+                userOrdersMap.computeIfAbsent(userId, k -> new ArrayList<>()).add(order);
+            });
+            return userOrdersMap;
+        } catch (Exception e) {
+            log.error("Error grouping orders by user", e);
+            throw new RuntimeException("Failed to group orders by user", e);
+        }
     }
 
-
     @Override
-    public OrderResponseDto getOrdersByUser (Long userId){
-        var user = userImp.findByUserId(userId);
-        List<OrderEntity> orders = orderImp.getOrderByUserId(user);
-        return orderEntityMapper.domainToDto(user,orders);
-
+    public OrderResponseDto getOrdersByUser(Long userId) {
+        try {
+            var user = userImp.findByUserId(userId);
+            List<OrderEntity> orders = orderImp.getOrderByUserId(user);
+            return orderEntityMapper.domainToDto(user, orders);
+        } catch (Exception e) {
+            log.error("Error fetching orders for userId: {}", userId, e);
+            throw new RuntimeException("Failed to fetch orders for user: " + userId, e);
+        }
     }
 
     @Override
     public List<OrderResponseDto> getAllOrders() {
-        List<UserEntity> users = (List<UserEntity>) userImp.findAll();
-        List<OrderResponseDto> orders = new ArrayList<>();
-        users.stream().forEach(user -> {
-            List<OrderEntity> orderEntity = orderImp.getOrderByUserId(user);
-            orders.add(orderEntityMapper.domainToDto(user, orderEntity));
-        });
-        return orders;
+        try {
+            List<UserEntity> users = (List<UserEntity>) userImp.findAll();
+            List<OrderResponseDto> orders = new ArrayList<>();
+            users.forEach(user -> {
+                List<OrderEntity> orderEntity = orderImp.getOrderByUserId(user);
+                orders.add(orderEntityMapper.domainToDto(user, orderEntity));
+            });
+            return orders;
+        } catch (Exception e) {
+            log.error("Error fetching all orders", e);
+            throw new RuntimeException("Failed to fetch all orders", e);
+        }
     }
-
 }
