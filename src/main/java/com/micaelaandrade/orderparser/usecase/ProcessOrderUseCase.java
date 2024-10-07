@@ -6,7 +6,7 @@ import com.micaelaandrade.orderparser.database.entity.UserEntity;
 import com.micaelaandrade.orderparser.domain.mapper.OrderMapper;
 import com.micaelaandrade.orderparser.domain.model.Order;
 import com.micaelaandrade.orderparser.dto.OrderDto;
-import com.micaelaandrade.orderparser.database.OrderImp;
+import com.micaelaandrade.orderparser.database.OrderImpl;
 import com.micaelaandrade.orderparser.database.entity.OrderEntity;
 import com.micaelaandrade.orderparser.database.mapper.OrderEntityMapper;
 
@@ -35,7 +35,7 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
 
     private final OrderMapper orderMapper;
     private final OrderEntityMapper orderEntityMapper;
-    private final OrderImp orderImp;
+    private final OrderImpl orderImp;
     private final UserImpl userImp;
 
     @Override
@@ -54,18 +54,13 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
         }
     }
 
-    private List<OrderDto> formatOrder(BufferedReader br) throws IOException {
+    protected List<OrderDto> formatOrder(BufferedReader br) throws IOException {
         log.error("Formating file");
         List<OrderDto> orderDtoList = new ArrayList<>();
         String line;
 
         while ((line = br.readLine()) != null) {
             try {
-
-                if (line.length() < 95) {
-                    log.error("Line is too short: {}", line);
-                    throw new IllegalArgumentException("Line is too short: " + line);
-                }
 
                 String userId = line.substring(0, 10).trim();
                 String userName = line.substring(10, 55).trim();
@@ -93,7 +88,7 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
         return orderDtoList;
     }
 
-    private void saveOrder(List<Order> orders) {
+     void saveOrder(List<Order> orders) {
         try {
             log.error("Saving Order");
             var orderItemByUser = orderByUser(orders);
@@ -135,7 +130,7 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
     @Override
     public List<OrderResponseDto> getAllOrders() {
         try {
-            List<UserEntity> users = (List<UserEntity>) userImp.findAll();
+            List<UserEntity> users = userImp.findAll();
             List<OrderResponseDto> orders = new ArrayList<>();
             users.forEach(user -> {
                 List<OrderEntity> orderEntity = orderImp.getOrderByUserId(user);

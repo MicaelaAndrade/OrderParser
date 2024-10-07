@@ -7,14 +7,15 @@ import com.micaelaandrade.orderparser.database.repository.OrderRepository;
 import com.micaelaandrade.orderparser.database.repository.ProductRepository;
 import com.micaelaandrade.orderparser.database.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OrderImp {
+public class OrderImpl {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -27,25 +28,23 @@ public class OrderImp {
                     .orElseGet(() -> userRepository.save(orderEntity.getUser()));
             orderEntity.setUser(user);
 
+
             OrderEntity existingOrder = orderRepository.findByExternalId(orderEntity.getExternalId())
                     .orElseGet(() -> orderRepository.save(orderEntity));
 
-            List<ProductEntity> updatedProductEntities = new ArrayList<>();
-            for (ProductEntity productEntity : orderEntity.getProductEntities()) {
-                productEntity.setOrder(existingOrder);
-                ProductEntity savedProduct = productRepository.save(productEntity);
-                updatedProductEntities.add(savedProduct);
-            }
+            List<ProductEntity> updatedProductEntities = orderEntity.getProductEntities().stream()
+                    .map(productEntity -> {
+                        productEntity.setOrder(existingOrder);
+                        return productRepository.save(productEntity);
+                    })
+                    .collect(Collectors.toList());
 
-            List<ProductEntity> existingProducts = existingOrder.getProductEntities();
-            for (ProductEntity existingProduct : existingProducts) {
-                if (!updatedProductEntities.contains(existingProduct)) {
-                    productRepository.delete(existingProduct);
-                }
-            }
+            existingOrder.getProductEntities().stream()
+                    .filter(existingProduct -> !updatedProductEntities.contains(existingProduct))
+                    .forEach(productRepository::delete);
+
 
             existingOrder.setProductEntities(updatedProductEntities);
-
             orderRepository.save(existingOrder);
         });
     }
