@@ -10,8 +10,6 @@
 - [Variaveis de ambiente](#variaveis-de-ambiente)
 - [Executar app](#executar-aplicação-via-docker)
 - [Testes](#testes)
-- [Sonar](#sonar)
-- [Swagger](#swagger)
 - [Coverage](#coverage)
 
 
